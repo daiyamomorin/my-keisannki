@@ -8,6 +8,8 @@ const desiredProfitBounds = {
   step: 1000
 } as const;
 
+const profitRateOptions = [0.15, 0.20, 0.25, 0.30] as const;
+
 const saleShippingOptions = [0, 160, 210, 215, 450, 750, 850, 1050, 1200, 1400] as const;
 
 const currencyFormatter = new Intl.NumberFormat('ja-JP', {
@@ -21,7 +23,9 @@ const clamp = (value: number, min: number, max: number) => {
 
 const ProcurementCalculator = () => {
   const [salePriceInput, setSalePriceInput] = useState<string>('');
-  const [desiredProfit, setDesiredProfit] = useState<number>(desiredProfitBounds.min);
+  const [profitMode, setProfitMode] = useState<'amount' | 'rate'>('amount');
+  const [desiredProfitAmount, setDesiredProfitAmount] = useState<number>(desiredProfitBounds.min);
+  const [desiredProfitRate, setDesiredProfitRate] = useState<number>(0.25);
   const [saleShippingIndex, setSaleShippingIndex] = useState<number>(0);
   const [purchaseShippingInput, setPurchaseShippingInput] = useState<string>('');
 
@@ -33,6 +37,15 @@ const ProcurementCalculator = () => {
     const parsed = Number(salePriceInput.replace(/,/g, ''));
     return Number.isNaN(parsed) ? NaN : parsed;
   }, [salePriceInput]);
+
+  const desiredProfit = useMemo(() => {
+    if (profitMode === 'rate') {
+      return Number.isFinite(salePrice) && salePrice > 0
+        ? Math.round(salePrice * desiredProfitRate)
+        : 0;
+    }
+    return desiredProfitAmount;
+  }, [profitMode, salePrice, desiredProfitRate, desiredProfitAmount]);
 
   const saleShippingCost = saleShippingOptions[saleShippingIndex] ?? saleShippingOptions[0];
   const purchaseShippingCost = useMemo(() => {
@@ -101,31 +114,71 @@ const ProcurementCalculator = () => {
 
         <div className="calculator__field">
           <div className="calculator__field-header">
-            <label htmlFor="desiredProfit" className="calculator__label">
-              希望利益額
-            </label>
-            <span className="calculator__value">{currencyFormatter.format(desiredProfit)}</span>
+            <span className="calculator__label">
+              {profitMode === 'amount' ? '希望利益額' : '希望利益率'}
+            </span>
+            <span className="calculator__value">
+              {profitMode === 'amount'
+                ? currencyFormatter.format(desiredProfitAmount)
+                : `${(desiredProfitRate * 100).toFixed(0)}%${Number.isFinite(salePrice) && salePrice > 0 ? `（${currencyFormatter.format(desiredProfit)}）` : ''}`}
+            </span>
           </div>
-          <input
-            id="desiredProfit"
-            name="desiredProfit"
-            type="range"
-            className="calculator__slider"
-            min={desiredProfitBounds.min}
-            max={desiredProfitBounds.max}
-            step={desiredProfitBounds.step}
-            value={desiredProfit}
-            onChange={(event) =>
-              setDesiredProfit(
-                clamp(Number(event.target.value), desiredProfitBounds.min, desiredProfitBounds.max)
-              )
-            }
-          />
-          <div className="calculator__scale">
-            <span>{currencyFormatter.format(desiredProfitBounds.min)}</span>
-            <span>{currencyFormatter.format(desiredProfitBounds.max)}</span>
+          <div className="calculator__button-group" role="group" aria-label="利益モード切替">
+            <button
+              type="button"
+              className={`calculator__chip${profitMode === 'amount' ? ' calculator__chip--active' : ''}`}
+              onClick={() => setProfitMode('amount')}
+            >
+              利益額
+            </button>
+            <button
+              type="button"
+              className={`calculator__chip${profitMode === 'rate' ? ' calculator__chip--active' : ''}`}
+              onClick={() => setProfitMode('rate')}
+            >
+              利益率
+            </button>
           </div>
-          <p className="calculator__hint">スライダーで希望利益を 1,000 円単位で調整できます。</p>
+          {profitMode === 'amount' ? (
+            <>
+              <input
+                id="desiredProfit"
+                name="desiredProfit"
+                type="range"
+                className="calculator__slider"
+                min={desiredProfitBounds.min}
+                max={desiredProfitBounds.max}
+                step={desiredProfitBounds.step}
+                value={desiredProfitAmount}
+                onChange={(event) =>
+                  setDesiredProfitAmount(
+                    clamp(Number(event.target.value), desiredProfitBounds.min, desiredProfitBounds.max)
+                  )
+                }
+              />
+              <div className="calculator__scale">
+                <span>{currencyFormatter.format(desiredProfitBounds.min)}</span>
+                <span>{currencyFormatter.format(desiredProfitBounds.max)}</span>
+              </div>
+              <p className="calculator__hint">スライダーで希望利益を 1,000 円単位で調整できます。</p>
+            </>
+          ) : (
+            <>
+              <div className="calculator__button-group" role="group" aria-label="希望利益率">
+                {profitRateOptions.map((rate) => (
+                  <button
+                    key={rate}
+                    type="button"
+                    className={`calculator__chip${desiredProfitRate === rate ? ' calculator__chip--active' : ''}`}
+                    onClick={() => setDesiredProfitRate(rate)}
+                  >
+                    {(rate * 100).toFixed(0)}%
+                  </button>
+                ))}
+              </div>
+              <p className="calculator__hint">ボタンで目標利益率を選択してください。</p>
+            </>
+          )}
         </div>
 
         <div className="calculator__field">
