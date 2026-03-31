@@ -14,7 +14,7 @@ export default defineConfig({
     setupFiles: './tests/setup.ts',
     coverage: {
       reporter: ['text', 'lcov'],
-      exclude: [...configDefaults.coverage.exclude, 'src/main.tsx', 'src/App.tsx']
+      exclude: [...(configDefaults.coverage?.exclude ?? []), 'src/main.tsx', 'src/App.tsx']
     }
   }
 });
