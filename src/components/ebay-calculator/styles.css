@@ -1,0 +1,190 @@
+.ebay-calc__profit {
+  transition: color 0.15s ease;
+}
+
+.ebay-calc__margin {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.ebay-calc__profit--positive {
+  color: #59d98e;
+}
+
+.ebay-calc__profit--negative {
+  color: #ef6b6b;
+}
+
+.ebay-calc__breakdown {
+  padding: 1.4rem 1.6rem;
+  border-radius: 16px;
+  background: rgba(26, 26, 26, 0.6);
+  border: 1px solid rgba(120, 120, 120, 0.25);
+}
+
+.ebay-calc__breakdown h3 {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  color: #d9d9d9;
+}
+
+.ebay-calc__breakdown-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.ebay-calc__breakdown-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.95rem;
+  color: #cfcfcf;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px dashed rgba(120, 120, 120, 0.18);
+}
+
+.ebay-calc__breakdown-row dt {
+  font-weight: 500;
+}
+
+.ebay-calc__breakdown-row dd {
+  margin: 0;
+  font-weight: 600;
+  color: #ececec;
+  white-space: nowrap;
+}
+
+.ebay-calc__breakdown-row--subtotal {
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(160, 160, 160, 0.25);
+  border-bottom: none;
+}
+
+.ebay-calc__breakdown-row--total dt,
+.ebay-calc__breakdown-row--total dd {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #f5f5f5;
+}
+
+.ebay-calc__breakeven {
+  padding: 0.2rem 0;
+}
+
+.ebay-calc__details {
+  border-radius: 16px;
+  background: rgba(26, 26, 26, 0.6);
+  border: 1px solid rgba(120, 120, 120, 0.25);
+  padding: 1.1rem 1.4rem;
+}
+
+.ebay-calc__details > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #d9d9d9;
+  user-select: none;
+}
+
+.ebay-calc__details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ebay-calc__details > summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 0.6rem;
+  color: rgba(200, 200, 200, 0.6);
+  transition: transform 0.15s ease;
+}
+
+.ebay-calc__details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.ebay-calc__details[open] > summary {
+  margin-bottom: 1.2rem;
+}
+
+.ebay-calc__details-grid {
+  margin: 0;
+}
+
+.ebay-calc__select {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: rgba(26, 26, 26, 0.85);
+  border: 1px solid rgba(120, 120, 120, 0.28);
+  color: #f1f1f1;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.ebay-calc__duty-field {
+  grid-column: 1 / -1;
+}
+
+.ebay-calc__duty-note {
+  line-height: 1.5;
+}
+
+.ebay-calc__toggle {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.ebay-calc__toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ebay-calc__toggle-track {
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(70, 70, 70, 0.6);
+  border: 1px solid rgba(140, 140, 140, 0.4);
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.ebay-calc__toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ececec;
+  transition: transform 0.15s ease;
+}
+
+.ebay-calc__toggle input:checked + .ebay-calc__toggle-track {
+  background: linear-gradient(135deg, rgba(120, 120, 120, 0.65), rgba(60, 60, 60, 0.85));
+  border-color: rgba(220, 220, 220, 0.6);
+}
+
+.ebay-calc__toggle input:checked + .ebay-calc__toggle-track::after {
+  transform: translateX(20px);
+}
+
+@media (max-width: 520px) {
+  .ebay-calc__breakdown {
+    padding: 1.1rem 1.2rem;
+  }
+
+  .ebay-calc__breakdown-row {
+    font-size: 0.88rem;
+  }
+}
