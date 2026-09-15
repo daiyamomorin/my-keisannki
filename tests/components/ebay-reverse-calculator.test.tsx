@@ -52,7 +52,7 @@ describe('eBay逆算計算機', () => {
     const dutyToggle = screen.getByLabelText('関税を自分で負担する（DDP）') as HTMLInputElement;
     expect(dutyToggle.checked).toBe(true);
 
-    const japanChip = screen.getByRole('button', { name: '日本（Section 301対象）' });
+    const japanChip = screen.getByRole('button', { name: '日本（Section 301対象・12.5%固定）' });
     expect(japanChip.className).toContain('calculator__chip--active');
 
     expect(document.getElementById('dutyRatePercent')).toBeNull();

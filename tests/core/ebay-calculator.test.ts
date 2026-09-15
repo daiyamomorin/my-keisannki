@@ -17,8 +17,11 @@ const baseInput: EbayCalculatorInput = {
   usdJpyRate: 155,
   promotedPercent: 0,
   dutyPaidBySeller: false,
+  destinationCountry: 'us',
   originCountry: 'japan',
   generalDutyRatePercent: 15,
+  chinaCombinedDutyRatePercent: 35,
+  intlDutyRatePercent: 0,
   customsHandlingMode: 'auto',
   customsHandlingJpy: 0
 };

@@ -3,18 +3,22 @@ import {
   calculateBreakEvenSalePriceUsd,
   calculateEbayProfit,
   type CustomsHandlingMode,
+  type DestinationCountry,
   type EbayCalculatorInput,
   type OriginCountry
 } from '../../core/ebay-calculator';
 import {
   DEFAULT_GENERAL_DUTY_RATE_PERCENT,
   MANUAL_OPTION,
+  chinaDutyRateHint,
   customsHandlingHint,
+  destinationCountryOptions,
   dutyNote,
   generalDutyRateHintJapan,
   generalDutyRateHintUs,
+  intlDestinationHint,
+  itemCategoryPresets,
   originCountryOptions,
-  fvfPresets,
   intlShippingPresets
 } from '../../core/ebay-presets';
 import '../procurement-calculator/styles.css';
@@ -50,14 +54,23 @@ const EbayCalculator = () => {
   const [intlShippingPreset, setIntlShippingPreset] = useState<string>(MANUAL_OPTION);
   const [intlShippingInput, setIntlShippingInput] = useState('0');
 
-  const [fvfPreset, setFvfPreset] = useState<string>(fvfPresets[0].label);
-  const [fvfRateInput, setFvfRateInput] = useState(String(fvfPresets[0].value));
+  const defaultCategoryPreset =
+    itemCategoryPresets.find((item) => item.label === 'その他') ?? itemCategoryPresets[0];
+  const [itemCategory, setItemCategory] = useState<string>(defaultCategoryPreset.label);
+  const [fvfRateInput, setFvfRateInput] = useState(String(defaultCategoryPreset.fvfRatePercent));
+  const [chinaDutyRateInput, setChinaDutyRateInput] = useState(
+    String(defaultCategoryPreset.chinaCombinedDutyRatePercent)
+  );
+  const [intlDutyRateInput, setIntlDutyRateInput] = useState(
+    String(defaultCategoryPreset.intlDutyRatePercent)
+  );
 
   const [internationalFeePercent, setInternationalFeePercent] = useState(1.65);
   const [fxFeePercent, setFxFeePercent] = useState(2.0);
   const [usdJpyRate, setUsdJpyRate] = useState(155);
   const [promotedPercent, setPromotedPercent] = useState(0);
   const [dutyPaidBySeller, setDutyPaidBySeller] = useState(true);
+  const [destinationCountry, setDestinationCountry] = useState<DestinationCountry>('us');
   const [originCountry, setOriginCountry] = useState<OriginCountry>('japan');
   const [dutyRateInput, setDutyRateInput] = useState(String(DEFAULT_GENERAL_DUTY_RATE_PERCENT));
   const [customsHandlingMode, setCustomsHandlingMode] = useState<CustomsHandlingMode>('auto');
@@ -72,11 +85,14 @@ const EbayCalculator = () => {
     }
   };
 
-  const handleFvfPresetChange = (label: string) => {
-    setFvfPreset(label);
-    const preset = fvfPresets.find((item) => item.label === label);
+  const handleItemCategoryChange = (label: string) => {
+    setItemCategory(label);
+    const preset = itemCategoryPresets.find((item) => item.label === label);
     if (preset) {
-      setFvfRateInput(String(preset.value));
+      setFvfRateInput(String(preset.fvfRatePercent));
+      setDutyRateInput(String(preset.usGeneralDutyRatePercent));
+      setChinaDutyRateInput(String(preset.chinaCombinedDutyRatePercent));
+      setIntlDutyRateInput(String(preset.intlDutyRatePercent));
     }
   };
 
@@ -93,8 +109,11 @@ const EbayCalculator = () => {
       usdJpyRate,
       promotedPercent,
       dutyPaidBySeller,
+      destinationCountry,
       originCountry,
       generalDutyRatePercent: parseAmount(dutyRateInput),
+      chinaCombinedDutyRatePercent: parseAmount(chinaDutyRateInput),
+      intlDutyRatePercent: parseAmount(intlDutyRateInput),
       customsHandlingMode,
       customsHandlingJpy: parseAmount(customsHandlingInput)
     }),
@@ -110,8 +129,11 @@ const EbayCalculator = () => {
       usdJpyRate,
       promotedPercent,
       dutyPaidBySeller,
+      destinationCountry,
       originCountry,
       dutyRateInput,
+      chinaDutyRateInput,
+      intlDutyRateInput,
       customsHandlingMode,
       customsHandlingInput
     ]
@@ -198,25 +220,27 @@ const EbayCalculator = () => {
 
         <div className="calculator__field">
           <div className="calculator__field-header">
-            <label htmlFor="fvfPreset" className="calculator__label">
-              カテゴリ（FVF率）
+            <label htmlFor="itemCategory" className="calculator__label">
+              カテゴリ
             </label>
-            <span className="calculator__value">{input.fvfRatePercent}%</span>
+            <span className="calculator__value">{input.fvfRatePercent}% (FVF)</span>
           </div>
           <select
-            id="fvfPreset"
-            name="fvfPreset"
+            id="itemCategory"
+            name="itemCategory"
             className="ebay-calc__select"
-            value={fvfPreset}
-            onChange={(event) => handleFvfPresetChange(event.target.value)}
+            value={itemCategory}
+            onChange={(event) => handleItemCategoryChange(event.target.value)}
           >
-            {fvfPresets.map((preset) => (
+            {itemCategoryPresets.map((preset) => (
               <option key={preset.label} value={preset.label}>
-                {preset.label}（{preset.value}%）
+                {preset.label}（FVF {preset.fvfRatePercent}%）
               </option>
             ))}
-            <option value={MANUAL_OPTION}>{MANUAL_OPTION}</option>
           </select>
+          <p className="calculator__hint">
+            カテゴリを選ぶとFVF率・原産国別の関税率がまとめてセットされる（下の詳細設定で個別に上書き可）。
+          </p>
           <div className="calculator__input-wrapper">
             <input
               id="fvfRatePercent"
@@ -225,10 +249,7 @@ const EbayCalculator = () => {
               className="calculator__input"
               inputMode="decimal"
               value={fvfRateInput}
-              onChange={(event) => {
-                setFvfPreset(MANUAL_OPTION);
-                setFvfRateInput(event.target.value);
-              }}
+              onChange={(event) => setFvfRateInput(event.target.value)}
             />
             <span className="calculator__prefix">%</span>
           </div>
@@ -418,8 +439,28 @@ const EbayCalculator = () => {
 
           <div className="calculator__field ebay-calc__duty-field">
             <div className="calculator__field-header">
+              <span className="calculator__label">配送先</span>
+            </div>
+            <div className="calculator__button-group" role="group" aria-label="配送先切替">
+              {destinationCountryOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`calculator__chip${
+                    destinationCountry === option.value ? ' calculator__chip--active' : ''
+                  }`}
+                  onClick={() => setDestinationCountry(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="calculator__field ebay-calc__duty-field">
+            <div className="calculator__field-header">
               <label htmlFor="dutyPaidBySeller" className="calculator__label">
-                関税を自分で負担する（DDP）
+                {destinationCountry === 'us' ? '関税を自分で負担する（DDP）' : '関税・消費税を自分で負担する'}
               </label>
               <label className="ebay-calc__toggle">
                 <input
@@ -432,7 +473,7 @@ const EbayCalculator = () => {
                 <span className="ebay-calc__toggle-track" aria-hidden="true" />
               </label>
             </div>
-            {dutyPaidBySeller && (
+            {dutyPaidBySeller && destinationCountry === 'us' && (
               <div className="calculator__field">
                 <div className="calculator__field-header">
                   <span className="calculator__label">原産国</span>
@@ -453,7 +494,7 @@ const EbayCalculator = () => {
                 </div>
               </div>
             )}
-            {dutyPaidBySeller && originCountry === 'us_or_other_exempt' && (
+            {dutyPaidBySeller && destinationCountry === 'us' && originCountry === 'us_or_other_exempt' && (
               <div className="calculator__field">
                 <div className="calculator__field-header">
                   <label htmlFor="dutyRatePercent" className="calculator__label">
@@ -476,10 +517,62 @@ const EbayCalculator = () => {
                 <p className="calculator__hint">{generalDutyRateHintUs}</p>
               </div>
             )}
-            {dutyPaidBySeller && originCountry === 'japan' && (
+            {dutyPaidBySeller && destinationCountry === 'us' && originCountry === 'japan' && (
               <p className="calculator__hint">{generalDutyRateHintJapan}</p>
             )}
-            {dutyPaidBySeller && (
+            {dutyPaidBySeller && destinationCountry === 'us' && originCountry === 'china' && (
+              <div className="calculator__field">
+                <div className="calculator__field-header">
+                  <label htmlFor="chinaDutyRatePercent" className="calculator__label">
+                    中国原産 合計実効税率（%）
+                  </label>
+                  <span className="calculator__value">{parseAmount(chinaDutyRateInput)}%</span>
+                </div>
+                <div className="calculator__input-wrapper">
+                  <input
+                    id="chinaDutyRatePercent"
+                    name="chinaDutyRatePercent"
+                    type="text"
+                    className="calculator__input"
+                    inputMode="decimal"
+                    value={chinaDutyRateInput}
+                    onChange={(event) => setChinaDutyRateInput(event.target.value)}
+                  />
+                  <span className="calculator__prefix">%</span>
+                </div>
+                <p className="calculator__hint">{chinaDutyRateHint}</p>
+              </div>
+            )}
+            {dutyPaidBySeller && destinationCountry !== 'us' && (
+              <div className="calculator__field">
+                <div className="calculator__field-header">
+                  <label htmlFor="intlDutyRatePercent" className="calculator__label">
+                    一般関税率（%）
+                  </label>
+                  <span className="calculator__value">{parseAmount(intlDutyRateInput)}%</span>
+                </div>
+                <div className="calculator__input-wrapper">
+                  <input
+                    id="intlDutyRatePercent"
+                    name="intlDutyRatePercent"
+                    type="text"
+                    className="calculator__input"
+                    inputMode="decimal"
+                    value={intlDutyRateInput}
+                    onChange={(event) => setIntlDutyRateInput(event.target.value)}
+                  />
+                  <span className="calculator__prefix">%</span>
+                </div>
+                <div className="calculator__field-header">
+                  <label className="calculator__label">関税＋GST/VAT（円）</label>
+                  <span className="calculator__value">
+                    {jpyFormatter.format(result.dutyJpy + result.intlTaxJpy)}
+                  </span>
+                </div>
+                <p className="calculator__hint">{intlDestinationHint}</p>
+              </div>
+            )}
+            {dutyPaidBySeller && destinationCountry === 'us' && (
               <div className="calculator__field">
                 <div className="calculator__field-header">
                   <label className="calculator__label">通関と処理手数料（円）</label>
@@ -591,6 +684,10 @@ const EbayCalculator = () => {
             <div className="ebay-calc__breakdown-row">
               <dt>通関と処理</dt>
               <dd>{jpyFormatter.format(result.customsHandlingFeeJpy)}</dd>
+            </div>
+            <div className="ebay-calc__breakdown-row">
+              <dt>GST/VAT（カナダ・イギリス・オーストラリア）</dt>
+              <dd>{jpyFormatter.format(result.intlTaxJpy)}</dd>
             </div>
             <div className="ebay-calc__breakdown-row ebay-calc__breakdown-row--subtotal">
               <dt>合計コスト</dt>

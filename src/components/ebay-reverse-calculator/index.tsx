@@ -107,8 +107,11 @@ const EbayReverseCalculator = () => {
       usdJpyRate,
       promotedPercent,
       dutyPaidBySeller,
+      destinationCountry: 'us',
       originCountry,
       generalDutyRatePercent: parseAmount(dutyRateInput),
+      chinaCombinedDutyRatePercent: 35,
+      intlDutyRatePercent: 0,
       customsHandlingMode,
       customsHandlingJpy: parseAmount(customsHandlingInput)
     }),
