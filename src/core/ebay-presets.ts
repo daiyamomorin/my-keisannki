@@ -95,6 +95,13 @@ export const itemCategoryPresets: ItemCategoryPreset[] = [
     intlDutyRatePercent: 5
   },
   {
+    label: 'トレーディングカード',
+    fvfRatePercent: 13.25,
+    usGeneralDutyRatePercent: 0,
+    chinaCombinedDutyRatePercent: 25,
+    intlDutyRatePercent: 0
+  },
+  {
     label: 'その他',
     fvfRatePercent: 13.6,
     usGeneralDutyRatePercent: 5,
