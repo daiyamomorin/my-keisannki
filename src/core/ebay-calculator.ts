@@ -1,16 +1,13 @@
 export type CustomsHandlingMode = 'auto' | 'manual';
 
-// 原産国区分。'japan' はSection 301（12.5%フロア）の対象、'china' はSection 301の追加関税が
-// 別枠で乗る区分（品目次第で水準が大きく変わる）、'us_or_other_exempt' は米国原産など再輸入扱いで
-// Section 301の12.5%フロアが適用されない区分。
-export type OriginCountry = 'japan' | 'china' | 'us_or_other_exempt';
+// 原産国。区分（Section 301の扱い）は ./origin-countries.ts で国ごとに決まる。
+export type { OriginCountry } from './origin-countries';
 
 // 配送先国。'us' 以外は実請求データがなく一般的な関税率・消費税制度からの概算。
 export type DestinationCountry = 'us' | 'ca' | 'uk' | 'au';
 
 import { CUSTOMS_HANDLING_BASE_JPY, CUSTOMS_HANDLING_DUTY_RATE } from './ebay-presets';
-
-const SECTION_301_FLOOR_RATE = 0.125;
+import { calculateUsDutyRatePercent, getOriginTier, type OriginCountry } from './origin-countries';
 
 // イギリス：135ポンド未満は購入者側でVATが処理され出品者コストは発生しない想定（概算のUSD換算）。
 const UK_DUTY_VAT_THRESHOLD_USD = 180;
@@ -111,19 +108,15 @@ export const calculateEbayProfit = (input: EbayCalculatorInput): EbayCalculatorR
   let intlTaxJpy = 0;
 
   if (destinationCountry === 'us') {
-    // 関税（dutyJpy）：原産国がjapan（Section 301対象）の場合はGeneral Rateと12.5%フロアの
-    // 高い方を採用。china の場合はMFN+Section301の合算実効税率をそのまま採用。
-    // us_or_other_exempt（Section 301対象外）の場合はGeneral Rateのみ採用する。
-    const generalDutyJpy = saleJpy * (generalDutyRatePercent / 100);
-    const section301FloorJpy = saleJpy * SECTION_301_FLOOR_RATE;
-    const chinaDutyJpy = saleJpy * (chinaCombinedDutyRatePercent / 100);
-    dutyJpy = !dutyPaidBySeller
-      ? 0
-      : originCountry === 'japan'
-        ? roundJpy(Math.max(generalDutyJpy, section301FloorJpy))
-        : originCountry === 'china'
-          ? roundJpy(chinaDutyJpy)
-          : roundJpy(generalDutyJpy);
+    // 関税（dutyJpy）：原産国の区分（origin-countries.ts）ごとにMFN税率とSection 301を組み合わせる。
+    // 日本等は合計12.5%、EU・台湾は合計10%に揃い、インド等はMFN+10%、ベトナム等や不明はMFN+12.5%、
+    // 中国は合計実効税率、米国原産はMFNのみ。
+    const dutyRatePercent = calculateUsDutyRatePercent(
+      getOriginTier(originCountry),
+      generalDutyRatePercent,
+      chinaCombinedDutyRatePercent
+    );
+    dutyJpy = !dutyPaidBySeller ? 0 : roundJpy(saleJpy * (dutyRatePercent / 100));
 
     // 通関と処理手数料：実データ6件から回帰した「573 + 関税額×10.05%」（関税額ベース）。
     customsHandlingFeeJpy = !dutyPaidBySeller

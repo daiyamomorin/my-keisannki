@@ -17,6 +17,8 @@ import {
   fvfPresets,
   intlShippingPresets
 } from '../../core/ebay-presets';
+import { OriginSelector } from '../shared/origin-selector';
+import { getOriginTier } from '../../core/origin-countries';
 import '../procurement-calculator/styles.css';
 import '../ebay-calculator/styles.css';
 
@@ -510,6 +512,7 @@ const EbayReverseCalculator = () => {
               </label>
             </div>
             {dutyPaidBySeller && (
+              <>
               <div className="calculator__field">
                 <div className="calculator__field-header">
                   <span className="calculator__label">原産国</span>
@@ -529,8 +532,14 @@ const EbayReverseCalculator = () => {
                   ))}
                 </div>
               </div>
+                <OriginSelector
+                  idPrefix="reverse"
+                  originCountry={originCountry}
+                  onOriginChange={setOriginCountry}
+                />
+              </>
             )}
-            {dutyPaidBySeller && originCountry === 'us_or_other_exempt' && (
+            {dutyPaidBySeller && ['general_only', 'cap_10', 'add_10', 'add_12_5'].includes(getOriginTier(originCountry)) && (
               <div className="calculator__field">
                 <div className="calculator__field-header">
                   <label htmlFor="dutyRatePercent" className="calculator__label">
