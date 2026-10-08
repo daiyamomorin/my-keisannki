@@ -26,19 +26,43 @@ export const brandOriginPresets: BrandOriginPreset[] = [
   {
     id: 'coach',
     label: 'コーチ（COACH）',
+    // 「ヴィンテージ」「Y2K」の言葉だけでは国が決まらないので、オールドコーチ・白タグ・ライン別で分ける。
     patterns: [
       {
-        label: '現行・Y2K・シグネチャー・表記なし',
-        origin: 'china',
-        confidence: 'medium',
-        basis:
-          'Y2Kシグネチャー：China 83%、キーホルダー系：China 84%。ベトナム・インドネシア・フィリピンも混在（安全側で中国）'
+        label: 'ライン不明・その他（国が混ざる）',
+        origin: 'unknown',
+        confidence: 'low',
+        basis: '現行系バッグ全般：China 31〜44%、Vietnam 22〜30%、他が混在。タグまたはモデル名で確認'
       },
       {
-        label: 'ヴィンテージ・NYC・レガシー（Made in USA）',
+        label: 'オールドコーチ・NYC・Made in USA',
         origin: 'us_or_other_exempt',
         confidence: 'high',
-        basis: 'United States 82〜95%（Costa Rica・中国が少数）'
+        basis: 'United States 82〜95%（ダイヤの判断：オールドコーチはアメリカ製）'
+      },
+      {
+        label: '白タグ',
+        origin: 'china',
+        confidence: 'high',
+        basis: 'ダイヤの判断：白タグは中国製で確定'
+      },
+      {
+        label: 'Legacy（レガシー）',
+        origin: 'us_or_other_exempt',
+        confidence: 'medium',
+        basis: 'United States 68%、China 16%、Costa Rica 12%'
+      },
+      {
+        label: 'Poppy・Hamptons・Kristin・Carly・Penelope',
+        origin: 'china',
+        confidence: 'medium',
+        basis: 'China 53〜68%（Penelopeはベトナム31%も）。米国の記載は誤記の可能性が高い'
+      },
+      {
+        label: 'キーホルダー・チャーム・ストラップ',
+        origin: 'china',
+        confidence: 'medium',
+        basis: 'China 84%（記載57件）'
       }
     ]
   },
