@@ -11,9 +11,15 @@ const usdFormatter = new Intl.NumberFormat('en-US', {
   currency: 'USD'
 });
 
+const setSalesTaxZero = () => {
+  const taxInput = screen.getByLabelText(/買い手のSales tax/) as HTMLInputElement;
+  fireEvent.change(taxInput, { target: { value: '0' } });
+};
+
 describe('eBay無在庫 利益計算機', () => {
   it('仕入れ値・販売予想額・国際送料プリセットから、DDPデフォルトON（関税12.5%＋通関と処理手数料自動計算）で利益と利益率を計算する', async () => {
     render(<EbayCalculator />);
+    setSalesTaxZero();
 
     const purchasePriceInput = screen.getByLabelText('仕入れ値（円）') as HTMLInputElement;
     fireEvent.change(purchasePriceInput, { target: { value: '10000' } });
@@ -58,6 +64,7 @@ describe('eBay無在庫 利益計算機', () => {
 
   it('DDPをOFFにすると関税分・通関と処理手数料がなくなり利益が増える', async () => {
     render(<EbayCalculator />);
+    setSalesTaxZero();
 
     const purchasePriceInput = screen.getByLabelText('仕入れ値（円）') as HTMLInputElement;
     fireEvent.change(purchasePriceInput, { target: { value: '10000' } });
@@ -89,6 +96,7 @@ describe('eBay無在庫 利益計算機', () => {
 
   it('FVF行はper-order feeを含まない料率分のみを表示し、per-order feeは別行で表示する', async () => {
     render(<EbayCalculator />);
+    setSalesTaxZero();
 
     const purchasePriceInput = screen.getByLabelText('仕入れ値（円）') as HTMLInputElement;
     fireEvent.change(purchasePriceInput, { target: { value: '10000' } });

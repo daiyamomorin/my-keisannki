@@ -56,7 +56,8 @@ export const itemCategoryPresets: ItemCategoryPreset[] = [
     label: 'バッグ・革小物',
     fvfRatePercent: 15.0,
     usGeneralDutyRatePercent: 8,
-    chinaCombinedDutyRatePercent: 35,
+    // 2026-10の実請求（コーチのバッグ、HTS 4202.21.9000）: General 9% + Section 301 25% + 強制労働関税 12.5% = 46.5%
+    chinaCombinedDutyRatePercent: 46.5,
     intlDutyRatePercent: 8
   },
   {

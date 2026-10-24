@@ -28,6 +28,9 @@ export interface EbayCalculatorInput {
   fxFeePercent: number;
   usdJpyRate: number;
   promotedPercent: number;
+  // 買い手が払う米国のSales tax率（%）。eBayは税込みの注文合計に手数料をかけるので、手数料ベースに上乗せする。
+  // 配送先が米国のときだけ使う。未指定は0。
+  buyerSalesTaxPercent?: number;
   dutyPaidBySeller: boolean;
   destinationCountry: DestinationCountry;
   originCountry: OriginCountry;
@@ -83,6 +86,7 @@ export const calculateEbayProfit = (input: EbayCalculatorInput): EbayCalculatorR
     fxFeePercent,
     usdJpyRate,
     promotedPercent,
+    buyerSalesTaxPercent = 0,
     dutyPaidBySeller,
     destinationCountry,
     originCountry,
@@ -94,9 +98,10 @@ export const calculateEbayProfit = (input: EbayCalculatorInput): EbayCalculatorR
   } = input;
 
   const totalSaleUsd = salePriceUsd + shippingChargedUsd;
-  const perOrderFeeUsd = calculatePerOrderFeeUsd(totalSaleUsd);
-  const fvfUsd = totalSaleUsd * (fvfRatePercent / 100) + perOrderFeeUsd;
-  const intlFeeUsd = totalSaleUsd * (internationalFeePercent / 100);
+  const feeBaseUsd = destinationCountry === 'us' ? totalSaleUsd * (1 + buyerSalesTaxPercent / 100) : totalSaleUsd;
+  const perOrderFeeUsd = calculatePerOrderFeeUsd(feeBaseUsd);
+  const fvfUsd = feeBaseUsd * (fvfRatePercent / 100) + perOrderFeeUsd;
+  const intlFeeUsd = feeBaseUsd * (internationalFeePercent / 100);
   const promotedUsd = salePriceUsd * (promotedPercent / 100);
   const netUsd = totalSaleUsd - fvfUsd - intlFeeUsd - promotedUsd;
   const netJpy = netUsd * usdJpyRate * (1 - fxFeePercent / 100);

@@ -72,6 +72,7 @@ const EbayReverseCalculator = () => {
   const [fxFeePercent, setFxFeePercent] = useState(2.0);
   const [usdJpyRate, setUsdJpyRate] = useState(155);
   const [promotedPercent, setPromotedPercent] = useState(0);
+  const [buyerSalesTaxPercent, setBuyerSalesTaxPercent] = useState(8);
   const [dutyPaidBySeller, setDutyPaidBySeller] = useState(true);
   const [originCountry, setOriginCountry] = useState<OriginCountry>('japan');
   const [dutyRateInput, setDutyRateInput] = useState(String(DEFAULT_GENERAL_DUTY_RATE_PERCENT));
@@ -108,11 +109,13 @@ const EbayReverseCalculator = () => {
       fxFeePercent,
       usdJpyRate,
       promotedPercent,
+      buyerSalesTaxPercent,
       dutyPaidBySeller,
       destinationCountry: 'us',
       originCountry,
       generalDutyRatePercent: parseAmount(dutyRateInput),
-      chinaCombinedDutyRatePercent: 35,
+      // 中国バッグの実請求(2026-10): 9% + 25% + 12.5% = 46.5%。このUIはカテゴリ選択がないのでバッグ基準
+      chinaCombinedDutyRatePercent: 46.5,
       intlDutyRatePercent: 0,
       customsHandlingMode,
       customsHandlingJpy: parseAmount(customsHandlingInput)
@@ -127,6 +130,7 @@ const EbayReverseCalculator = () => {
       fxFeePercent,
       usdJpyRate,
       promotedPercent,
+      buyerSalesTaxPercent,
       dutyPaidBySeller,
       originCountry,
       dutyRateInput,
@@ -490,6 +494,28 @@ const EbayReverseCalculator = () => {
                 inputMode="decimal"
                 value={promotedPercent}
                 onChange={(event) => setPromotedPercent(Number(event.target.value))}
+              />
+              <span className="calculator__prefix">%</span>
+            </div>
+          </div>
+
+          <div className="calculator__field">
+            <div className="calculator__field-header">
+              <label htmlFor="buyerSalesTaxPercent" className="calculator__label">
+                買い手のSales tax（手数料が税込みにかかる）
+              </label>
+              <span className="calculator__value">{buyerSalesTaxPercent}%</span>
+            </div>
+            <div className="calculator__input-wrapper">
+              <input
+                id="buyerSalesTaxPercent"
+                name="buyerSalesTaxPercent"
+                type="number"
+                className="calculator__input"
+                step={0.1}
+                inputMode="decimal"
+                value={buyerSalesTaxPercent}
+                onChange={(event) => setBuyerSalesTaxPercent(Number(event.target.value))}
               />
               <span className="calculator__prefix">%</span>
             </div>
